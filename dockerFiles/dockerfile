@@ -1,0 +1,16 @@
+ARG PHP_VERSION=7.4
+FROM php:${PHP_VERSION}-fpm
+
+ RUN docker-php-ext-install mysqli \
+   && docker-php-ext-install pdo_mysql \
+   && pecl install redis-5.2.2 \
+   && docker-php-ext-enable redis\
+   && pecl install xdebug \
+   && docker-php-ext-enable xdebug \
+   && apt-get update\
+   && apt-get install git -y
+
+# config files
+COPY ${PWD}/configs/php/custom-php-config.ini  /usr/local/etc/php/conf.d/
+COPY ${PWD}/configs/php/xdebug.ini  /usr/local/etc/php/conf.d/
+COPY ${PWD}/configs/php/www2.conf  /usr/local/etc/php-fpm.d/

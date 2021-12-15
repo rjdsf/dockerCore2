@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+    nginx-proxy:
+        container_name: nginx-proxy
+        image: jwilder/nginx-proxy
+        restart: unless-stopped
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            # - ./proxy/vhost:/etc/nginx/vhost.d:ro       # when we want to use Per-VIRTUAL_HOST configuration
+            - cert:/etc/nginx/certs:ro                    # If not using ssl comment this out 
+        networks:
+            - docker-core
+    mariadb:
+        image: mariadb
+        restart: unless-stopped
+        ports:
+            - 3306:3306
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_USER=admin
+            - MYSQL_PASSWORD=admin
+        volumes:
+            - maridb:/var/lib/mysql
+        networks:
+            - docker-core
+    # redis:
+    #     image: redis
+    #     restart: unless-stopped
+    #     ports:
+    #         - 6379:6379
+    #     volumes:
+    #         - ./redis/redis.conf:/redis.conf:ro
+    #     command: [ "redis-server", "/redis.conf" ]
+    #     networks:
+    #         - docker-core
+    # redis-commander:
+    #     hostname: redis-commander
+    #     image: rediscommander/redis-commander:latest
+    #     environment:
+    #         - REDIS_HOSTS=local:redis:6379
+    #     ports:
+    #         - 8081:8081
+    #     networks:
+    #         - docker-core
+    dozzle:
+        container_name: dozzle
+        image: amir20/dozzle:latest
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        ports:
+            - 9999:8080
+
+volumes:
+    maridb:
+    cert:        
+
+networks:
+    docker-core:
+        name: docker-core

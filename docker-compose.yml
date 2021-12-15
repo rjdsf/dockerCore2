@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:latest
+    expose:
+      - 443
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PORT: 443
+      HTTPS_METHOD: redirect
+      VIRTUAL_PROTO: https
+      NGINX_APP_ROOT:  ${NGINX_APP_ROOT}
+      NGINX_INDEX_FILE: ${NGINX_INDEX_FILE}
+      NGINX_PHP_SERVER: localhost
+      NGINX_SERVER_NAME: ${VIRTUAL_HOST}
+    volumes:
+      - ./Sites/${REPO_NAME}:/var/www/html/${REPO_NAME}:delegated
+      - ./dockerFiles/templates:/var/templates:ro
+      - dockercore_cert:/etc/nginx/certs:ro  
+    command: /bin/bash -c "envsubst '$$NGINX_APP_ROOT $$NGINX_INDEX_FILE $$NGINX_PHP_SERVER $$VIRTUAL_PORT $$NGINX_SERVER_NAME' < /var/templates/nginx/default.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    networks:
+      - docker-core
+  php-fpm:
+    build:
+      context: ./dockerFiles
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+    restart: unless-stopped
+    volumes:
+        - ./Sites/${REPO_NAME}:/var/www/html/${REPO_NAME}:delegated
+    network_mode: service:nginx
+    depends_on:
+      - nginx
+
+volumes:
+   dockercore_cert:
+    external: true
+
+networks:
+  docker-core:
+    external: true
