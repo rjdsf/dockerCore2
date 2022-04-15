@@ -3,7 +3,7 @@ FROM php:${PHP_VERSION}-fpm
 
  RUN docker-php-ext-install mysqli \
    && docker-php-ext-install pdo_mysql \
-   && pecl install redis-5.2.2 \
+   && pecl install redis \
    && docker-php-ext-enable redis\
    && pecl install xdebug \
    && docker-php-ext-enable xdebug \
@@ -14,3 +14,12 @@ FROM php:${PHP_VERSION}-fpm
 COPY ${PWD}/configs/php/custom-php-config.ini  /usr/local/etc/php/conf.d/
 COPY ${PWD}/configs/php/xdebug.ini  /usr/local/etc/php/conf.d/
 COPY ${PWD}/configs/php/www2.conf  /usr/local/etc/php-fpm.d/
+
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# install zsh
+RUN apt-get install -y zsh
+RUN PATH="$PATH:/usr/bin/zsh"
+RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
