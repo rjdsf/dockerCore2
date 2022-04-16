@@ -23,10 +23,12 @@ services:
     networks:
       - docker-core
   php-fpm:
+    user: '${UID}:${GUID}'
     build:
       context: ./dockerFiles
       args:
         PHP_VERSION: ${PHP_VERSION}
+        UID: ${UID}
     restart: unless-stopped
     volumes:
         - ./Sites/${REPO_NAME}:/var/www/html/${REPO_NAME}:delegated
